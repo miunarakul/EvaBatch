@@ -1,0 +1,163 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "BB";
+}
+
+
+<style>
+    div.dataTables_wrapper {
+        /*width: 500px;*/
+        margin: 0 auto;
+    }
+
+    .panel-group {
+        margin: 15px 0;
+    }
+
+    .yellowRow {
+        background-color: #f9ff99 !important;
+    }
+
+    input[type=text] {
+        background-color: #ffffff !important;
+    }
+
+    .greenRow {
+        background-color: #7fff8e !important;
+    }
+
+    .custom-file-label::after {
+        color: #ffffff;
+    }
+
+    .ui-widget-header {
+        background: #1041b3;
+        border: 1px solid #DDDDDD;
+        color: #333333;
+        font-weight: bold;
+    }
+
+    .progress-label {
+        position: absolute;
+        left: 50%;
+        top: 5px;
+        font-weight: bold;
+        text-shadow: 1px 1px 0 #fff;
+    }
+
+    .red {
+        color: red;
+    }
+</style>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingOne">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Search Criteria : BB Batch
+                </a>
+            </h4>
+        </div>
+
+        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">
+                <form method="post" target="_blank" action="@Url.Action("ExportExcelByCriteria", "RFQRecord")" id="formExportCriteria">
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtBuyerCode">Buyer Code :</label>
+                        <div class="col-sm-3 col-md-4">
+                            <input type="text" class="form-control form-control-sm" id="txtBuyerCode" name="txtBuyerCode" placeholder="Buyer Code" />
+                        </div>
+
+                        <label class="col-sm-3 col-md-2 control-form-label" for="selVendorCode">Vendor Name :</label>
+                        <div class="col-sm-3 col-md-4">
+                            <select class="form-control form-control-sm" id="selVendorCode" name="selVendorCode"></select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtCusCode">Customer code :</label>
+                        <div class="col-sm-3 col-md-4">
+                            <input type="text" class="form-control form-control-sm" id="txtCusCode" name="txtCusCode" placeholder="Customer code" />
+                        </div>
+
+                        <label class="col-sm-3 col-md-2 control-form-label" for="selStatus">Status :</label>
+                        <div class="col-sm-3 col-md-4">
+                            <select class="form-control form-control-sm" id="selStatus" name="selStatus">
+                                <option value="">-- Select --</option>
+                                <option>Open</option>
+                                <option>Sent</option>
+                                <option>Closed</option>
+                                <option>No Response</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtPartNo">Part number :</label>
+                        <div class="col-sm-3 col-md-4">
+                            <input type="text" class="form-control form-control-sm" id="txtPartNo" name="txtPartNo" placeholder="Part number" />
+                        </div>
+
+                        <label class="col-sm-3 col-md-2 control-form-label" for="">Vendor Group :</label>
+                        <div class="col-sm-3 col-md-4">
+                            <select class="form-control form-control-sm" id="selVendorGroup" name="selVendorGroup"></select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-12 text-right">
+                            <button type="button" class="btn btn-primary" id="btnSearch">
+                                <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search
+                            </button>
+                            <button type="Reset" class="btn btn-danger" id="btnReset">
+                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Reset
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+        <div class="panel panel-footer">
+            <button type="button" class="btn btn-info" id="btnAdd">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Record
+            </button>
+
+            @*<button type="button" class="btn btn-danger" id="btnDelete">
+                    <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+                </button>*@
+
+            <button type="button" class="btn btn-success" id="btnExport">
+                <span class="glyphicon glyphicon-save-file" aria-hidden="true"></span> Export to Excel
+            </button>
+        </div>
+
+        <table class="table table-striped table-bordered nowrap" id="dtData" style="width:100%; font-size:12px;">
+            @*<table id="dtData" class="display nowrap" cellspacing="0" style="width:100%">*@
+            <thead>
+                <tr>
+                    <th><input type="checkbox" name="select_all" value="1"></th>
+                    @*<th>Action</th>*@
+                    <th>RFQ ID</th>
+                    <th>Customer Code</th>
+                    <th>Buyer Code</th>
+                    <th>Part Number</th>
+                    <th>Part Description</th>
+                    <th>Manufacturer Name</th>
+                    <th>Mfg part no.</th>
+                    <th>Need Qty</th>
+                    <th>Vendor code</th>
+                    <th>Vendor Name</th>
+                    <th>Quoted Manufacturer</th>
+                    <th>Quoted Mfg part no.</th>
+
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+    </div>
+</div>
+
+<form method="post" target="_blank" action="@Url.Action("ExportExcelBySelected", "RFQRecord")" id="formExportSelected">
+    <input type="hidden" id="rfqItem" name="rfqItem" value="" />
+</form>

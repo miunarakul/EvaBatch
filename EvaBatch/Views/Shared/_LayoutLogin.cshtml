@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+     <!-- start: META -->
+    <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8" />
+    <!--[if IE]><meta http-equiv='X-UA-Compatible' content="IE=edge,IE=9,IE=8,chrome=1" /><![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="application-name" content="Login Local Application" />
+    <meta name="author" content="Thitiphol Chernkraw" />
+    <!-- end: META -->
+    <link rel="icon" href="~/images/SpectrumPro.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="~/images/SpectrumPro.png" type="image/x-icon" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="~/Content/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="~/Content/bootstrap-theme.css" type="text/css" />
+    <link rel="stylesheet" href="~/Content/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="~/Content/Site.css" type="text/css" />
+    <title>EvaBatch: @ViewBag.Title</title>
+    @*<link rel="icon" href="~/images/SpectrumPro.png" type="image/x-icon" />
+        <link rel="shortcut icon" href="~/images/SpectrumPro.png" type="image/x-icon" />*@
+    <!-- start: MAIN CSS -->
+
+@Styles.Render("~/Content/loginn")
+
+<!-- end: MAIN CSS -->
+@if (IsSectionDefined("csses"))
+{
+    @RenderSection("csses")
+}
+<!-- end: CSS REQUIRED FOR THIS PAGE ONLY -->
+</head>
+<body class="login example3">
+
+    @RenderBody()
+    <!-- end: FOOTER -->
+    <!-- start: MAIN JAVASCRIPTS -->
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src='<%=ResolveUrl("~/Scripts/login/under_ie9/respond.min.js") %>'></script>
+    <script type="text/javascript" src='<%=ResolveUrl("~/Scripts/login/under_ie9/excanvas.min.js") %>'></script>
+    <script type="text/javascript" src='<%=ResolveUrl("~/Scripts/login/under_ie9/jquery.min.js") %>'></script>
+    <![endif]-->
+    <!--[if gte IE 9]><!-->
+    <script type="text/javascript" src='~/Scripts/login/support_ie/over_ie9/jquery.min.js'></script>
+    <!--<![endif]-->
+
+    @Scripts.Render("~/bundles/loginn")
+
+    <!-- end: MAIN JAVASCRIPTS -->
+    <!-- start: JAVASCRIPTS REQUIRED FOR THIS PAGE ONLY -->
+    <!-- end: JAVASCRIPTS REQUIRED FOR THIS PAGE ONLY -->
+
+    @if (IsSectionDefined("scripts"))
+    {
+        @RenderSection("scripts")
+    }
+
+</body>
+</html>

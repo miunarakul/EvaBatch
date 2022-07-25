@@ -1,0 +1,389 @@
+﻿
+@{
+    ViewBag.Title = "Search";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts
+{
+    <script>
+        $(document).ready(
+
+           function () {
+                var url_string = window.location.href;
+                var url = new URL(url_string);
+                var id = url.searchParams.get("id");
+                console.log(id);
+
+
+                url = '@Url.Action("GetDataById", "Search")';
+                const param = { id };
+                try {
+                    $.ajax({
+                        url: url,
+                        data: param,
+                        type: 'GET',
+                        success: function (data) {
+                            console.log(data.data);
+                            console.log(data.Log);
+
+                            let obj = [];
+
+                            obj = data.data[0];
+                            let BatchNo = obj.DOCNUMBER;
+                            let checkType = BatchNo.slice(0, 3);
+                            let TYPE = '';
+                            let ddlCustomer = data.ddlCus;
+
+                            console.log(checkType);
+                            if (checkType == "BB0") {
+                                TYPE = "BB";
+                            } else if (checkType == "EVA") {
+                                TYPE = "EVA";
+                            } else {
+                                TYPE = "EPA";
+                            }
+                            console.log(ddlCustomer)
+                            let elmment = $('#customer')
+                            for (let e = 0; e <= ddlCustomer.length; e++) {
+                                elmment.append(`<option value="${ddlCustomer[e]}">${ddlCustomer[e]}</option>`)
+                            }
+
+                             mapObj(obj, TYPE);
+                             SetData(data.Log);
+
+                        }, // end success:
+                        fail: function (xhr, status, error) {
+                            showMessage('danger', '<b>Error!<b> ' + error);
+                        } // end fail:
+                    }); // end ajax:
+                } // end try:
+
+                catch (err) {
+                    showMessage('danger', '<b>Error!</b> ' + err);
+                } // end catch: err
+
+            }
+
+        )
+
+
+
+
+        function SetData(data) {
+            var table = $('#dtDataHistory').DataTable();
+            //console.log(ddlCustomer);
+            debugger;
+            let objDT = data;
+            $('#ConfirmBTN').hide();
+            table = $('#dtDataHistory').DataTable({
+                destroy: true,
+                dom: 'lrti',
+                data: objDT,
+                "scrollX": true,
+                fixedHeader: true,
+                buttons: [
+                    'excel'
+                ],
+                columns: [
+                    {
+                        data: 'Datetime',
+                        render: function (data) {
+                            if (data == '/Date(-62135596800000)/' || data == null) {
+                                return 'NODATA';
+
+                            } else {
+                                return moment(data).format('YYYY/MM/DD');
+
+                            }
+                        }
+                    },
+                    {
+                        data: "Username",
+                        render: function (data, type, row, meta) {
+                            if (data == null) {
+                                return row['Display_name'];
+                            } else {
+                                return row['Username'];
+                            }
+                        }
+                    },
+                    { data: "Action" },
+                    { data: "Description" }
+                ],
+                'columnDefs': [
+                    {
+                        'targets': 0,
+                    },
+                    {
+                        'targets': 1,
+                    },
+                    {
+                        'targets': 2,
+                    },
+                    {
+                        'targets': 3,
+                    }
+                ],
+            });
+
+
+        }
+
+        function Edit() {
+            let elem = document.getElementById('formEvaBatch').querySelectorAll('.input-form');
+            $('#EditBTN').hide();
+            $('#ConfirmBTN').show();
+
+            $("#Expire").datepicker();
+            elem.forEach(
+                function(currentValue, currentIndex, listObj) {
+                    elem[currentIndex].removeAttribute('disabled');
+                }
+            );
+        }
+
+        function cancleBtn() {
+            let elem = document.getElementById('formEvaBatch').querySelectorAll('.input-form');
+            $('#EditBTN').show();
+            $('#ConfirmBTN').hide();
+
+            elem.forEach(
+                function (currentValue, currentIndex, listObj) {
+                    debugger;
+                    elem[currentIndex].setAttribute('disabled',true);
+                }
+            );
+        }
+        $('form#formEvaBatch').on("submit", function (event) {
+            event.preventDefault();
+            debugger;
+            console.log($(this).serialize());
+            let param = $(this).serialize();
+            url = '@Url.Action("UpdateEVAForm", "Search")';
+                $.ajax({
+                    url: url + '?' + param,
+                    type: 'GET',
+                    success: function (data) {
+                        let obj = [];
+
+                        obj = data.data[0];
+                        let BatchNo = obj.DOCNUMBER;
+                        let checkType = BatchNo.slice(0, 3);
+                        let TYPE = '';
+                        let ddlCustomer = data.ddlCus;
+
+                        console.log(checkType);
+                        if (checkType == "BB0") {
+                            TYPE = "BB";
+                        } else if (checkType == "EVA") {
+                            TYPE = "EVA";
+                        } else {
+                            TYPE = "EPA";
+                        }
+                        console.log(ddlCustomer)
+                        let elmment = $('#customer')
+                        for (let e = 0; e <= ddlCustomer.length; e++) {
+                            elmment.append(`<option value="${ddlCustomer[e]}">${ddlCustomer[e]}</option>`)
+                        }
+
+                        mapObj(obj, TYPE);
+                        SetData(data.Log);
+
+                    }, // end success:
+                    fail: function (xhr, status, error) {
+                        showMessage('danger', '<b>Error!<b> ' + error);
+                    } // end fail:
+
+                });
+            });
+
+
+
+
+
+
+        function mapObj(obj,Type) {
+            $('.panel-title').text('');
+            $('.panel-title').text(Type + ' Batch Controller Form : ' + obj.DOCNUMBER);
+
+            $('#valID').val(obj.ID)
+            $('#CLSPN').val(obj.CLSPN);
+            $('#MFG').val(obj.MFGNAME);
+            $('#MPN').val(obj.MPN);
+            $('#Remark').val(obj.REMARK);
+            $('#QTY').val(obj.QTY);
+            if (obj.REQ_TYPE != 'Internal Controlled') {
+                $('#comment_label').text('');
+                $('#comment_label').text('TCO/Deviation Number:');
+
+            }
+            $('#comment').val(obj.INPUT_COMMENT);
+
+            $('#customer').val(obj.CUSTOMER);
+            $('#DOCNUMBER').val(obj.DOCNUMBER);
+            $('#DEVIATION_NUMBER').val(obj.DEVIATION_NUMBER);
+            $('#EFFICIENCY_POWER').val(obj.EFFICIENCY_POWER);
+            
+            $('#RequestType').val(obj.REQ_TYPE);
+            $('#FORM_TYPE').val(obj.FORM_TYPE);
+
+
+            $('#btnDelete').val(obj.ID);
+            $('#RequestType').prop("disabled", true);
+            $('#customer').prop("disabled", true);
+            if (obj.EXP_DATE == '/Date(-62135596800000)/' || obj.EXP_DATE == null) {
+                $('#Expire').val('NODATA');
+
+            } else {
+                $('#Expire').val(moment(obj.EXP_DATE).format('MM/DD/YYYY'));
+            }
+        }
+    </script>
+}
+<style>
+    div.dataTables_wrapper {
+        /*width: 500px;*/
+        margin: 0 auto;
+    }
+    .form-actions, .form-group {
+        text-align: left;
+        width: 100%;
+        display: flex;
+        justify-content: left;
+    }
+    .panel-group {
+        margin: 15px 0;
+    }
+
+    .yellowRow {
+        background-color: #f9ff99 !important;
+    }
+
+    input[type=text] {
+        background-color: #ffffff !important;
+    }
+
+    .greenRow {
+        background-color: #7fff8e !important;
+    }
+
+    .custom-file-label::after {
+        color: #ffffff;
+    }
+
+    .ui-widget-header {
+        background: #1041b3;
+        border: 1px solid #DDDDDD;
+        color: #333333;
+        font-weight: bold;
+    }
+
+    .progress-label {
+        position: absolute;
+        left: 50%;
+        top: 5px;
+        font-weight: bold;
+        text-shadow: 1px 1px 0 #fff;
+    }
+
+    .red {
+        color: red;
+    }
+</style>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="headingOne">
+            <h4 class="panel-title">
+                   Batch
+            </h4>
+        </div>
+
+        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+            <div class="panel-body">
+                <form method="post" target="_blank" action="@Url.Action("ExportExcelByCriteria", "RFQRecord")" id="formEvaBatch">
+                    <input type="hidden" id="DOCNUMBER" name="DOCNUMBER" value="">
+                    <input type="hidden" name="ID" id="valID" value="">
+                    <input type="hidden" name="DEVIATION_NUMBER" id="DEVIATION_NUMBER" value="">
+                    <input type="hidden" name="EFFICIENCY_POWER" id="EFFICIENCY_POWER" value="">
+                    <input type="hidden" name="FORM_TYPE" id="FORM_TYPE" value="">
+                    <input type="hidden" name="UPDATE_BY" id="UPDATE_BY" value="@Session["USER_NAME"].ToString()">
+                    <input type="hidden" name="FULL_NAME" id="FULL_NAME" value="@Session["FULL_NAME"].ToString()">
+                
+                    <div class="form-group row">
+
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtCustomer">Customer:</label>
+
+
+                        <select name="CUSTOMER" id="customer" class="form-group input-form">
+                        </select>
+
+
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtRequest">Request Type:</label>
+
+                        <select name="REQ_TYPE" id="RequestType" class="form-group input-form">
+                            <option value="Internal Controlled">Internal Controlled</option>
+                            <option value="Customer Controlled">Customer Controlled</option>
+                        </select>
+
+
+                    </div>
+                    <div class="form-group row">
+                        <label id="comment_label" class="col-sm-3 col-md-2 control-form-label" for="Comment">Input Comment :</label> <input name="INPUT_COMMENT" class="form-group-sm input-form" id="comment" type="text" value="" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtPN">CTH PN Impacted:</label> <input name="CLSPN" class="form-group-sm input-form" id="CLSPN" type="text" value="" disabled>
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtMFG">MFG Name:</label> <input class="form-group-sm input-form" name="MFGNAME" id="MFG" type="text" value="" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtMPN">MPN:</label> <input class="form-group-sm input-form" name="MPN" id="MPN" type="text" value="" disabled>
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtQTY">QTY:</label> <input class="form-group-sm input-form" name="QTY" id="QTY" type="text" value="" disabled>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtExpired">Expired Date:</label><input class="form-group-sm input-form" name="EXP_DATE" id="Expire" type="datetime" value="" disabled>
+                        <label class="col-sm-3 col-md-2 control-form-label" for="txtRemark">Remark:</label><input class="form-group-sm input-form" id="Remark" name="REMARK" type="text" value="" disabled>
+                    </div>
+                    <div id="EditBTN" class=" row">
+                        <div class="col-sm-12 text-right">
+                            <button type="button" class="btn btn-primary" id="btnEdit" onclick="Edit()">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Edit
+                            </button>
+                            <button type="Reset" class="btn btn-danger" id="btnDelete" value="">
+                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div id="ConfirmBTN" class=" row">
+                        <div class="col-sm-12 text-right">
+                            <button type="submit" class="btn btn-success">
+                                <span class="glyphicon glyphicon-collapse-down" aria-hidden="true"></span> submit
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btnCancle" onclick="cancleBtn()">
+                                <span class="glyphicon glyphicon-collapse-down" aria-hidden="true"></span> Cancle
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+        <div class="panel panel-footer">
+          <b> History </b>
+        </div>
+
+        <table class="table table-striped table-bordered nowrap" id="dtDataHistory" style="width:100%; font-size:12px;">
+            <thead>
+                <tr>
+                    <th>Date Time</th>
+                    <th>By</th>
+                    <th>Action</th>
+                    <th>Detail</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+    </div>
+</div>

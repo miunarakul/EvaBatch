@@ -1,0 +1,311 @@
+﻿@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@*<link href="~/Content/DataTables/extensions/FixedColumns/css/fixedColumns.bootstrap.min.css" rel="stylesheet" />*@
+@*<link href="https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">*@   @*I got this link from Tutorials point*@
+@*<link href="../../Content/bootstrap.css" rel="stylesheet" type="text/css" /> @*Download Bootstrap from Nuget Package manager*@
+@*<link href="../../Content/bootstrap-theme.css" rel="stylesheet" type="text/css" />*@
+@Styles.Render("~/Content/sweetalert")
+@Styles.Render("~/Content/css")
+@Styles.Render("~/Content/themes/base/css")
+
+<style>
+    .panel-group {
+        margin: 15px 0;
+    }
+
+    .yellowRow {
+        background-color: #f9ff99 !important;
+    }
+
+    input[type=text] {
+        background-color: #ffffff !important;
+    }
+
+    .greenRow {
+        background-color: #7fff8e !important;
+    }
+
+    .custom-file-label::after {
+        color: #ffffff;
+    }
+
+    .ui-widget-header {
+        background: #1041b3;
+        border: 1px solid #DDDDDD;
+        color: #333333;
+        font-weight: bold;
+    }
+
+    .progress-label {
+        position: absolute;
+        left: 50%;
+        top: 5px;
+        font-weight: bold;
+        text-shadow: 1px 1px 0 #fff;
+    }
+
+    .red {
+        color: red;
+    }
+    .form-group.row {
+        text-align: left;
+        justify-content: flex-start;
+        text-align: left;
+    }
+</style>
+
+@section scripts
+{
+    <script src="~/Scripts/moment.min.js"></script>
+    <script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#CreateDate').datepicker({ dateFormat: 'mm/dd/yy' });
+        $('#ToDate').datepicker({ dateFormat: 'mm/dd/yy' });
+        $('#CreateDate').datepicker('setDate', '-90');
+        $('#ToDate').datepicker('setDate', '+0');
+            let param = $('form#formEvaBatchSearch').serialize();
+            LoadData(param);
+    });
+
+    $('form#formEvaBatchSearch').on("submit", function (event) {
+        event.preventDefault();
+        debugger;
+
+        console.log($(this).serialize());
+        let param = $('form#formEvaBatchSearch').serialize();
+        LoadData(param);
+    });
+
+
+       
+
+
+    function LoadData(param) { 
+        var url = `@Url.Action("GetAllRecord")`;
+
+        url += '?' + param;
+        $.get(url).then((res) => {
+            console.log(res.data);
+            SetData(res.data, res.ddlCus);
+
+            $("button#DTSearch").on('click', () => {
+                $(".filters").toggle(500);
+            })
+        });
+    };
+
+
+        function SetData(data, ddlCus) {
+        var table = $('#dtData').DataTable();
+        console.log(data);
+        let elmment = $('#customer');
+        let ddlCustomer = ddlCus;
+        for (let e = 0; e <= ddlCustomer.length; e++) {
+            elmment.append(`<option value="${ddlCustomer[e]}">${ddlCustomer[e]}</option>`)
+        }
+
+        $('#dtData thead tr')
+            .clone(true)
+            .addClass('filters toggle_search')
+            .appendTo('#dtData thead');
+
+        $(".filters").attr("style", "display:none");
+
+        table = $('#dtData').DataTable({
+            destroy: true,
+            dom: 'Blfrtip',
+            data: data,
+            "scrollX": true,
+            orderCellsTop: true,
+            fixedHeader: true,
+            buttons: [
+                'excelHtml5'
+            ],
+            initComplete: function () {
+                var api = this.api();
+                // For each column
+                api.columns().eq(0).each(function (colIdx) {
+                    // Set the header cell to contain the input element
+                    var cell = $('.filters th').eq(
+                        $(api.column(colIdx).header()).index()
+                    );
+                    var title = $(cell).text();
+                    $(cell).html('<input type="text" placeholder="' + title + '" />');
+
+                    // On every keypress in this input
+                    $(
+                        'input',
+                        $('.filters th').eq($(api.column(colIdx).header()).index())
+                    )
+                        .off('keyup change')
+                        .on('keyup change', function (e) {
+                            e.stopPropagation();
+
+                            // Get the search value
+                            $(this).attr('title', $(this).val());
+                            var regexr = '({search})'; //$(this).parents('th').find('select').val();
+
+                            var cursorPosition = this.selectionStart;
+                            // Search the column for that value
+                            api
+                                .column(colIdx)
+                                .search(
+                                    this.value != ''
+                                        ? regexr.replace('{search}', '(((' + this.value + ')))')
+                                        : '',
+                                    this.value != '',
+                                    this.value == ''
+                                )
+                                .draw();
+
+                            $(this)
+                                .focus()[0]
+                                .setSelectionRange(cursorPosition, cursorPosition);
+                        });
+                });
+            },
+            columns: [
+                {
+                    data: {
+                        ID: { data: "ID" },
+                        Batch_NO: { data: "Batch_NO" }
+                    },
+                    render: function (data, type, row, meta) {
+                        if (data == 0) {
+                            return '';
+                        } else {
+                            return '<a href="search?id=' + data["ID"] + '" >' + data["Batch_NO"] + '</a>';
+                        }
+                    }
+                },
+                { data: "CUSTOMER" },
+                { data: "REQ_TYPE" },
+                { data: "MFGNAME" },
+                { data: "QTY." },
+                {
+                    data: 'CREATE_DATE',
+                    render: function (data) {
+                        if (data == '/Date(-62135596800000)/' || data == null) {
+                            return 'NODATA';
+
+                        } else {
+                            return moment(data).format('MM/DD/YYYY');
+
+                        }
+                    }
+                }
+            ],
+            'columnDefs': [
+                {
+                    'targets': 0,
+                    'searchable': true,
+                    'orderable': false
+                },
+                {
+                    'targets': 1,
+                    'searchable': true,
+                    'orderable': false
+                },
+                {
+                    'targets': 2,
+                    'searchable': true,
+                    'orderable': false
+                },
+                {
+                    'targets': 3,
+                    'visible': true,
+                    'searchable': false
+                },
+                {
+                    'targets': 4,
+                    'searchable': true,
+                    'orderable': false
+                }
+            ], order: [[0, 'asc']]
+        });
+        $('.dataTables_filter').html('')
+        $('.dataTables_filter').html(`<button class="btn btn-primary" type="button" id="DTSearch" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                search
+                            </button>`)
+        };
+
+    </script>
+}
+<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+    <div class="panel-body">
+        <form method="post" target="_blank" action="@Url.Action("ExportExcelByCriteria", "RFQRecord")" id="formEvaBatchSearch">
+            <div class="form-group row">
+                <label class="col-sm-3 col-md-2 control-form-label" for="txtCustomer">Customer:</label>
+                <select name="CUSTOMER" id="customer" class="form-group input-form">
+                </select>
+                <label class="col-sm-3 col-md-2 control-form-label" for="txtRequest">Request Type:</label>
+                <select name="REQ_TYPE" id="RequestType" class="form-group input-form">
+                    <option value="Internal Controlled">Internal Controlled</option>
+                    <option value="Customer Controlled">Customer Controlled</option>
+                </select>
+            </div>
+            @*<div class="form-group row">
+            <label id="comment_label" class="col-sm-3 col-md-2 control-form-label" for="Comment">Input Comment :</label> <input name="INPUT_COMMENT" class="form-group-sm input-form" id="comment" type="text" value="" disabled>
+        </div>*@
+            <div class="form-group row">
+                <label class="col-sm-3 col-md-2 control-form-label" for="txtPN">Batch No:</label> <input name="DOCNUMBER" class="form-group-sm input-form" id="CLSPN" type="text" value=""  >
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-3 col-md-2 control-form-label" for="txtMFG">MFG Name:</label> <input class="form-group-sm input-form" name="MFGNAME" id="MFG" type="text" value="">
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-3 col-md-2 control-form-label" for="txtQTY">QTY:</label> <input class="form-group-sm input-form" name="QTY" id="QTY" type="text" value="" >
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-3 col-md-2 control-form-label" for="txtExpired">Create Date:</label><input class="form-group-sm input-form" name="CREATE_DATE" id="CreateDate" type="datetime" value="">
+                <label class="col-sm-3 col-md-2 control-form-label" for="txtExpired">TO Date:</label><input class="form-group-sm input-form" name="TO_DATE" id="ToDate" type="datetime" value="">
+            </div>
+
+            <div id="ConfirmBTN" class=" row">
+                <div class="col-sm-12 text-right">
+                    <button type="submit" class="btn btn-success">
+                        <span class="glyphicon glyphicon-collapse-down" aria-hidden="true"></span> submit
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default">
+        <table class="table table-striped table-bordered nowrap" id="dtData" style="width:100%; font-size:12px;">
+            <thead>
+                <tr id="toggle_search_column">
+                    <th>Batch No.</th>
+                    <th>Customer</th>
+                    <th>Request Type</th>
+                    <th>MFG Name</th>
+                    <th>QTY.</th>
+                    <th>Create Date.</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="panel panel-footer">
+        @*<button type="button" class="btn btn-info" id="btnAdd">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add Record
+            </button>*@
+
+        @*<button type="button" class="btn btn-danger" id="btnDelete">
+                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete
+            </button>*@
+
+        @*<button type="button" class="btn btn-success" id="btnExport">
+                <span class="glyphicon glyphicon-save-file" aria-hidden="true"></span> Export to Excel
+            </button>*@
+    </div>
+</div>
+
+<form method="post" target="_blank" action="@Url.Action("ExportExcelBySelected", "RFQRecord")" id="formExportSelected">
+    <input type="hidden" id="rfqItem" name="rfqItem" value="" />
+</form>
